@@ -31,7 +31,7 @@ I do not see other use cases for this lib.
 ## Example
 
 ```c
-#include "../tinyutc.h"
+#include "tinyutc.h"
 
 int main(){
     struct TinyUTCTime current_time = {
