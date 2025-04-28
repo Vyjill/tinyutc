@@ -43,11 +43,11 @@ main(){
         .second = my_rtc_time_struct.second,
     };
 
-    // The __tinyutc_time_t is described in the `# Types` section
-    __tinyutc_time_t current_timestamp = tinyutc_utc_to_unix(&current_time)
+    // The tinyutc_time_t is described in the `# Types` section
+    tinyutc_time_t current_timestamp = tinyutc_utc_to_unix(&current_time)
 
     // I want an alarm 10 days and 7 seconds in the future
-    __tinyutc_time_t alarm_timestamp = current_timestamp + 10 * _TINYUTC_SECS_PER_DAY + 7
+    tinyutc_time_t alarm_timestamp = current_timestamp + 10 * _TINYUTC_SECS_PER_DAY + 7
 
     struct TinyUTCTime alarm_time = {0};
 
@@ -60,11 +60,11 @@ main(){
 
 ## Types
 
-As for the timestamp type, TinyUTC uses a custom type `__tinyutc_time_t`, defined
+As for the timestamp type, TinyUTC uses a custom type `tinyutc_time_t`, defined
 by default as a `uint32_t`. You can override it in your application, for instance:
 
 ```c
-#define __tinyutc_time_t uint64_t
+#define tinyutc_time_t uint64_t
 #include "tinyutc.h"
 ```
 

@@ -11,8 +11,8 @@
 
 #include <stdint.h>
 
-#ifndef __tinyutc_time_t
-#define __tinyutc_time_t uint32_t
+#ifndef tinyutc_time_t
+#define tinyutc_time_t uint32_t
 #endif
 
 #define _TINYUTC_UNIX_EPOCH_YEAR (1970UL)
@@ -74,7 +74,7 @@ extern "C"
      * @param utc_tm  Pointer to a UTCTime structure where the converted UTC
      *                time will be stored.
      */
-    static inline void tinyutc_unix_to_utc(__tinyutc_time_t unix_ts, struct TinyUTCTime *utc_tm)
+    static inline void tinyutc_unix_to_utc(tinyutc_time_t unix_ts, struct TinyUTCTime *utc_tm)
     {
         uint16_t year;
         uint8_t month, days_in_month;
@@ -144,9 +144,9 @@ extern "C"
      *
      * @return The corresponding Unix timestamp as a signed 32-bit integer.
      */
-    static inline __tinyutc_time_t tinyutc_utc_to_unix(struct TinyUTCTime *utc_tm)
+    static inline tinyutc_time_t tinyutc_utc_to_unix(struct TinyUTCTime *utc_tm)
     {
-        __tinyutc_time_t unix_ts;
+        tinyutc_time_t unix_ts;
         int i;
 
         // Offset year is the number of years since the Unix epoch (1970).
