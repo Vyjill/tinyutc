@@ -34,7 +34,7 @@ I do not see other use cases for this lib.
 #include "tinyutc.h"
 
 main(){
-    struct UTCTime current_time = {
+    struct TinyUTCTime current_time = {
         .year = my_rtc_time_struct.year,
         .month = my_rtc_time_struct.month,
         .day = my_rtc_time_struct.day,
@@ -47,9 +47,9 @@ main(){
     __tinyutc_time_t current_timestamp = tinyutc_utc_to_unix(&current_time)
 
     // I want an alarm 10 days and 7 seconds in the future
-    __tinyutc_time_t alarm_timestamp = current_timestamp + 10 * _TINYUTC_SECS_PER_HOUR + 7
+    __tinyutc_time_t alarm_timestamp = current_timestamp + 10 * _TINYUTC_SECS_PER_DAY + 7
 
-    struct UTCTime alarm_time = {0};
+    struct TinyUTCTime alarm_time = {0};
 
     tinyutc_unix_to_utc(alarm_timestamp, &alarm_time);
 
@@ -60,7 +60,7 @@ main(){
 
 ## Types
 
-As the timestamp type, TinyUTC uses a custom type `__tinyutc_time_t`, defined
+As for the timestamp type, TinyUTC uses a custom type `__tinyutc_time_t`, defined
 by default as a `uint32_t`. You can override it in your application, for instance:
 
 ```c
