@@ -21,9 +21,11 @@
 #define _TINYUTC_DAYS_PER_LEAP_YEAR (366UL)
 
 #define _TINYUTC_SECS_PER_MIN (60UL)
+#define _TINYUTC_MIN_PER_HOUR (60UL)
 #define _TINYUTC_SECS_PER_HOUR (3600UL)
-#define _TINYUTC_SECS_PER_DAY (_TINYUTC_SECS_PER_HOUR * 24UL)
-#define _TINYUTC_DAYS_PER_WEEK (7UL)
+#define _TINYUTC_HOUR_PER_DAY (24UL)
+#define _TINYUTC_SECS_PER_DAY (_TINYUTC_SECS_PER_HOUR * _TINYUTC_HOUR_PER_DAY)
+#define _TINYUTC_MONTH_PER_YEAR (12UL)
 
 /**
  * A leap year occurs
@@ -81,18 +83,18 @@ extern "C"
         unsigned long days;
 
         // Compute seconds
-        utc_tm->second = unix_ts % 60;
+        utc_tm->second = unix_ts % _TINYUTC_SECS_PER_MIN;
 
         // Morph seconds to minutes, then compute minutes
-        unix_ts /= 60;
-        utc_tm->minute = unix_ts % 60;
+        unix_ts /= _TINYUTC_SECS_PER_MIN;
+        utc_tm->minute = unix_ts % _TINYUTC_MIN_PER_HOUR;
 
         // Morph minutes to hours, then compute hours
-        unix_ts /= 60;
-        utc_tm->hour = unix_ts % 24;
+        unix_ts /= _TINYUTC_MIN_PER_HOUR;
+        utc_tm->hour = unix_ts % _TINYUTC_HOUR_PER_DAY;
 
         // Morph hours to days
-        unix_ts /= 24;
+        unix_ts /= _TINYUTC_HOUR_PER_DAY;
 
         // To find the year, we have to "manually" count days
         // until reaching the desired year.
@@ -112,7 +114,7 @@ extern "C"
 
         days = 0;
         days_in_month = 0;
-        for (month = 0; month < 12; month++)
+        for (month = 0; month < _TINYUTC_MONTH_PER_YEAR; month++)
         {
             // Compute the number of days in this month
             days_in_month = days_month[LEAP_YEAR(year)][month];
