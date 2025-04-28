@@ -22,15 +22,5 @@ int main()
 
     printf("Unix Timestamp: %d\n", alarm_ts);
     printf("UTC Time: %02d:%02d:%02d %02d/%02d/%04d\n", utc_tm.hour, utc_tm.minute, utc_tm.second, utc_tm.day, utc_tm.month, utc_tm.year);
-    
-    
-    struct TinyUTCTime current_time = {
-        .year = 2025,
-        .month = 4,
-        .day = 28,
-        .hour = 17,
-        .minute = 55,
-        .second = 19
-    };
 
 }
