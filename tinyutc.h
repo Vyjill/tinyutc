@@ -108,7 +108,7 @@ extern "C"
         days -= LEAP_YEAR(year) ? _TINYUTC_DAYS_PER_LEAP_YEAR : _TINYUTC_DAYS_PER_YEAR;
 
         // Remove the days of all past years, leaving us with only the day of the current year
-        unix_ts -= days; // now it is days in this year, starting at 0
+        unix_ts -= days;
 
         days = 0;
         days_in_month = 0;
@@ -126,7 +126,6 @@ extern "C"
             unix_ts -= days_in_month;
         }
 
-        // Offset year to UNIX epoch, 1970
         utc_tm->year = year;
         // Offset month and day to use human-indexing
         utc_tm->month = month + 1;
