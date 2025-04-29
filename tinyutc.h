@@ -3,7 +3,7 @@
  * @brief A simple library for converting between Unix timestamps and UTC time.
  * @author Ulysse Moreau
  * @date 2025-04-28
- * @version 1.0
+ * @version 1.1
  */
 
 #ifndef _TINYUTC_H
