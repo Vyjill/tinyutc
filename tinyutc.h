@@ -110,9 +110,9 @@ extern "C"
      * This function takes a Unix timestamp and converts it into a UTC time
      * representation, storing the result in the provided TinyUTCTime structure.
      *
-     * @param unix_ts The Unix timestamp to be converted.
-     * @param utc_tm Pointer to a TinyUTCTime structure where the converted
+     * @param[out] utc_tm Pointer to a TinyUTCTime structure where the converted
      *               UTC time will be stored.
+     * @param[in]  unix_ts The Unix timestamp to be converted.
      *
      * @return A uint8_t value indicating success or failure of the conversion.
      *         Typically, 0 indicates success, while non-zero values indicate
@@ -189,7 +189,9 @@ extern "C"
      * This function takes a pointer to a TinyUTCTime structure representing
      * a date and time in UTC and converts it to the corresponding Unix timestamp.
      *
-     * @param utc_tm Pointer to a TinyUTCTime structure containing the UTC time.
+     * @param[in] utc_tm Pointer to a TinyUTCTime structure where the converted
+     *               UTC time will be stored.
+     * @param[out]  unix_ts The Unix timestamp result.
      * @return A uint8_t value indicating success or failure of the conversion.
      *         Typically, 0 indicates success, while non-zero values indicate
      *         an error.
