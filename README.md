@@ -43,14 +43,13 @@ int main()
 
     struct TinyUTCTime alarm_time = {0};
 
-    tinyutc_unix_to_utc(alarm_timestamp, &alarm_time);
+    tinyutc_unix_to_utc(&alarm_time, alarm_timestamp);
 
     // Some microcontrollers needs the week day to exhaustively set it up.
     uint8_t week_day = tinyutc_get_week_day(&current_time, 0);
 
     // Then, you can set up your RTC struct accordingly, and set up the correct alarm.
 }
-
 ```
 
 ### Parsing ISO8601 strings
