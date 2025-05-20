@@ -2,20 +2,29 @@
 
 C time conversion functions for embedded programming.
 
-This is a single-header header library, exposing three functions:
+This is a single-header header library, exposing the following function:
 
 - `tinyutc_unix_to_utc`: From an UNIX timestamp to a UTC time structure.
 - `tinyutc_utc_to_unix`: From an UTC time structure to an UNIX timestamp.
-- `tinyutc_get_week_day`: Get the week day (0 = Sunday) from an UTC time structure.
+- `tinyutc_get_week_day`: Get the week day from a UTC time structure.
+
+Aditionnaly, an iso datetime parser can be found, with the following function exposed
+
+- `tinyutc_parse_iso8601_datetime`: Parse an ISO8601 datetime string to a UTC time structure.
+- `tinyutc_parse_iso8601_date`: Parse an ISO8601 date string to a UTC time structure.
+- `tinyutc_parse_iso8601_time`: Parse an ISO8601 time string to a UTC time structure.
 
 The datetime range supported is **after 01/01/1970 00:00:00 UTC**.
 
-## Example
+## Example codes
+
+### Converting timestamps
 
 ```c
-#include "../tinyutc.h"
+#include "tinyutc.h"
 
-int main(){
+int main()
+{
     struct TinyUTCTime current_time = {
         .year = 2024,
         .month = 02,
@@ -25,20 +34,40 @@ int main(){
         .second = 03,
     };
 
+    uint32_t current_timestamp = 0;
     // The tinyutc_time_t is described in the `# Types` section
-    tinyutc_time_t current_timestamp = tinyutc_utc_to_unix(&current_time);
+    tinyutc_utc_to_unix(&current_time, &current_timestamp);
 
     // I want an alarm 10 days and 7 seconds in the future
-    tinyutc_time_t alarm_timestamp = current_timestamp + 10 * _TINYUTC_SECS_PER_DAY + 7;
+    uint32_t alarm_timestamp = current_timestamp + 10 * _TINYUTC_SECS_PER_DAY + 7;
 
     struct TinyUTCTime alarm_time = {0};
 
     tinyutc_unix_to_utc(alarm_timestamp, &alarm_time);
 
     // Some microcontrollers needs the week day to exhaustively set it up.
-    uint8_t week_day = tinyutc_get_week_day(&current_time);
+    uint8_t week_day = tinyutc_get_week_day(&current_time, 0);
 
     // Then, you can set up your RTC struct accordingly, and set up the correct alarm.
+}
+
+```
+
+### Parsing ISO8601 strings
+
+
+```c
+#include "tinyutc.h"
+#include "iso8601_parser.h"
+
+int main(){
+    struct TinyUTCTime result = {0};
+
+    // The third argument corresponds to the parser strictness.
+    // Strictness means that a date and a time MUST be separated by the caracter 'T'.
+    tinyutc_parse_iso8601_datetime(&result, "1972-12-31T17:05:03-0100", false);
+    tinyutc_parse_iso8601_date(&result, "2013W217");
+    tinyutc_parse_iso8601_time(&result, "T01:23:45.111111Z");
 }
 ```
 
@@ -51,6 +80,23 @@ by default as a `uint32_t`. You can override it in your application, for instanc
 #define tinyutc_time_t uint64_t
 #include "tinyutc.h"
 ```
+
+## Configs
+
+Available configs are
+
+```
+TINYUTC_USE_KEITH_METHOD
+```
+
+The method for the week day calculation is Sakamoto's method by default. To use
+Keith method, use :
+
+```c
+#define TINYUTC_USE_KEITH_METHOD
+```
+
+The Keith method is valid between only 1905 and 2099, but saves you 12 bytes on the stack.
 
 ## About UTC and UNIX timestamp
 
@@ -84,13 +130,15 @@ In most applications, this is fine tho.
 
 # Genesis
 
-When developping embedded application, the time library usually present in `posix`
+When developping embedded application, the time library present in `posix` family
 are generally not available. Typically, `localtime` is rarely present and `mktime`
 is virtually never present. And **that is a good thing**.
 
 Indeed, mktime's resposability is to break apart a UNIX timestamp in meaningful
 date & time data, according to the timezone environement. In an embedded environement,
 there is no such thing as a timezone environement.
+
+> Note that the UTC-equivalent `timegm` is _occasionnaly_ present, and serves the same purpose.
 
 However, in some rare cases, converting back-and forth an
 UNIX timestamp and specifically **UTC** date & time
@@ -105,11 +153,14 @@ I do not see other use cases for this lib.
 
 # Dependencies
 
-`stdint`. Please. At least.
+`stdint` & `stdbool`. Please. At least.
+
+I run my own internal functions for parsing strings, as I only really need `strlen`,
+which is trivial.
 
 # Tests
 
-Somewhat. Check the `examples` folder.
+Extensive. Check the `tests` folder.
 
 # FAQ
 
@@ -133,6 +184,17 @@ absolutely need to go back to the drawing board.
 If you need such a feature, there is no way you have done a correct
 architecture without _at least_ using an embedded linux to manage
 this kind of hurdles.
+
+## Aren't you kind of already parsing time zones in iso8601 strings ?
+
+**No**. Those are not _timezones_, those are _UTC offsets_. They indicate
+by how much the specified date-time differ from UTC. Time zones are a political
+division of groups of people, where depending on the location on the
+earth, the time of the year (aka daylight saving time), and mabye stuff
+that I am not aware of, a decision is made to set the local time
+with some offset from UTC. This final decision, only valid for some
+period of time that I don't wanna hear about, is eventually conveyed by
+a UTC offset, that this library _do_ parse, and transforms to UTC.
 
 ## Why can't you incorporate leap seconds into the computations ?
 
