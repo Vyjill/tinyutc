@@ -9,14 +9,15 @@ int main()
         .hour = 17,
         .minute = 05,
         .second = 03,
+        .microseconds = 0,
     };
 
-    uint32_t current_timestamp = 0;
     // The tinyutc_time_t is described in the `# Types` section
+    tinyutc_time_t current_timestamp = 0;
     tinyutc_utc_to_unix(&current_time, &current_timestamp);
 
     // I want an alarm 10 days and 7 seconds in the future
-    uint32_t alarm_timestamp = current_timestamp + 10 * _TINYUTC_SECS_PER_DAY + 7;
+    tinyutc_time_t alarm_timestamp = current_timestamp + 10 * _TINYUTC_SECS_PER_DAY + 7;
 
     struct TinyUTCTime alarm_time = {0};
 
