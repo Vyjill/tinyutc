@@ -701,7 +701,7 @@ err_t tinyutc_parse_iso8601_time(struct TinyUTCTime *utc_tm, const char *iso8601
         return TINYUTC_ISO8601_UTC_OFFSET_WITHOUT_DATE;
     }
 
-    // Tidy utc struct artifically : if 24:00:00, set to 00:00:00, 
+    // Tidy utc struct artifically : if 24:00:00, set to 00:00:00,
     // but do not touch date components
     if (utc_tm->hour == 24)
     {

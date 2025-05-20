@@ -5,7 +5,7 @@
  * @date 2025-05-02
  * @version 2.0
  * @license WTFPL (Do What The F*ck You Want To Public License)
- * 
+ *
  * This program is free software. It comes without any warranty, to
  * the extent permitted by applicable law. You can redistribute it
  * and/or modify it under the terms of the Do What The Fuck You Want
@@ -51,8 +51,43 @@ extern "C"
         TINYUTC_INTERNAL_ERROR = -13,
     };
 
+    /**
+     * @brief Parses an ISO 8601 formatted time string into a TinyUTCTime structure.
+     *
+     * This function takes a string representing a time in ISO 8601 format (e.g., "12:34:56" or "12:34:56Z")
+     * and fills the provided TinyUTCTime structure with the corresponding time values.
+     *
+     * @param[out] utc_tm Pointer to a TinyUTCTime structure to be filled with parsed time values.
+     * @param[in] iso8601_time Null-terminated string containing the ISO 8601 formatted time.
+     * @return err_t Error code indicating the result of the parsing operation.
+     *         Returns 0 on success, or a non-zero error code on failure (e.g., invalid format).
+     */
     err_t tinyutc_parse_iso8601_datetime(struct TinyUTCTime *utc_tm, const char *iso8601, bool use_strict_separator);
+
+    /**
+     * @brief Parses an ISO 8601 formatted date string into a TinyUTCTime structure.
+     *
+     * This function takes an ISO 8601 date string (e.g., "2023-06-15" or "2023W24-4")
+     * and fills the provided TinyUTCTime structure with the corresponding date and time values.
+     *
+     * @param[out] utc_tm Pointer to a TinyUTCTime structure to be filled with parsed date and time.
+     * @param[in] iso8601_date Null-terminated string containing the ISO 8601 formatted date.
+     * @return err_t Error code indicating success or failure of the parsing operation.
+     */
     err_t tinyutc_parse_iso8601_date(struct TinyUTCTime *utc_tm, const char *iso8601_date);
+
+    /**
+     * @brief Parses an ISO 8601 formatted datetime string into a TinyUTCTime structure.
+     *
+     * This function attempts to parse the provided ISO 8601 datetime string and populate
+     * the given TinyUTCTime structure with the corresponding date and time values.
+     *
+     * @param[out] utc_tm Pointer to a TinyUTCTime structure to be filled with parsed values.
+     * @param[in] iso8601 Null-terminated string containing the ISO 8601 datetime to parse.
+     * @param[in] use_strict_separator If true, requires strict use of 'T' as the date-time separator.
+     *                                 If false, allows any char as a valid separator.
+     * @return err_t Error code indicating success or the type of parsing failure.
+     */
     err_t tinyutc_parse_iso8601_time(struct TinyUTCTime *utc_tm, const char *iso8601_time);
 
 #ifdef __cplusplus

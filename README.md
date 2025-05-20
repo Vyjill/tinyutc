@@ -210,6 +210,10 @@ add the function, but i'll just do exactly that inside, so I
 find it cleaner not to expose this function, and let you code it
 explicitely if you really need it.
 
+## The function documentation has some wierd phrasing...
+
+I generated them using copilot. Rest assured, though, that I coded the functions logic with my human brain.
+
 ## WTF is that weird license ?
 
 [WTFPL](https://www.wtfpl.net/), more precisely.
