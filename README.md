@@ -107,7 +107,7 @@ the "seconds" in a UNIX timestamp is defined as "something that there is
 $86400$ of in a day. This would be a good measure of time if there were 
 $24 \times 60 \times 60$ seconds in a day, but sadly, it is not the case.
 
-### What us UTC ?
+### What is UTC ?
 
 UTC (Coordinated Universal Time) is based from TAI (International Atomic Time),
 where a second is a second (a precise amount of time measured by atomic clock),
@@ -131,7 +131,7 @@ In most applications, this is fine tho.
 # Genesis
 
 When developping embedded application, the time library present in `posix` family
-are generally not available. Typically, `localtime` is rarely present and `mktime`
+is generally not available. Typically, `localtime` is rarely present and `mktime`
 is virtually never present. And **that is a good thing**.
 
 Indeed, mktime's resposability is to break apart a UNIX timestamp in meaningful
@@ -140,7 +140,7 @@ there is no such thing as a timezone environement.
 
 > Note that the UTC-equivalent `timegm` is _occasionnaly_ present, and serves the same purpose.
 
-However, in some rare cases, converting back-and forth an
+However, in some rare cases, converting back and forth an
 UNIX timestamp and specifically **UTC** date & time
 can be necessary. Many RTC modules only speak in date & time structures,
 but it isn't trivial to compute time deltas in such a form.
@@ -188,11 +188,14 @@ this kind of hurdles.
 ## Aren't you kind of already parsing time zones in iso8601 strings ?
 
 **No**. Those are not _timezones_, those are _UTC offsets_. They indicate
-by how much the specified date-time differ from UTC. Time zones are a political
-division of groups of people, where depending on the location on the
+by how much the specified date-time differ from UTC.
+
+Time zones are a political division of groups of people, where depending on the location on the
 earth, the time of the year (aka daylight saving time), and mabye stuff
 that I am not aware of, a decision is made to set the local time
-with some offset from UTC. This final decision, only valid for some
+with some offset from UTC.
+
+This final decision, only valid for some
 period of time that I don't wanna hear about, is eventually conveyed by
 a UTC offset, that this library _do_ parse, and transforms to UTC.
 
