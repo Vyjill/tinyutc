@@ -2,10 +2,10 @@
  * @file tinyutc.h
  * @brief A simple library for converting between Unix timestamps and UTC time.
  * @author Ulysse Moreau
- * @date 2025-04-28
- * @version 1.1
+ * @date 2025-05-02
+ * @version 2.0
  * @license WTFPL (Do What The F*ck You Want To Public License)
- * 
+ *
  * This program is free software. It comes without any warranty, to
  * the extent permitted by applicable law. You can redistribute it
  * and/or modify it under the terms of the Do What The Fuck You Want
@@ -18,10 +18,13 @@
 #define _TINYUTC_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifndef tinyutc_time_t
-#define tinyutc_time_t uint32_t
+typedef uint32_t tinyutc_time_t;
 #endif
+
+typedef int err_t;
 
 #define _TINYUTC_UNIX_EPOCH_YEAR (1970UL)
 
@@ -46,7 +49,7 @@
  * - If the year is divisible by 4 and not divisible by 100
  */
 
-#define IS_LEAP_YEAR(YEAR) \
+#define _TINYUTC_IS_LEAP_YEAR(YEAR) \
     (((YEAR) % 400 == 0) || (((YEAR) % 4 == 0) && ((YEAR) % 100 != 0)))
 
 /**
@@ -69,29 +72,36 @@
 
 #define _TINYUTC_IS_FEBRUARY(month) ((month) == 1)
 
-#define _TINYUTC_GET_DAYS_IN_MONTH_LEAP_YEAR(month) \
-    (_TINYUTC_IS_FEBRUARY(month) ? _TINYUTC_DAYS_IN_FEBRUARY_LEAP : _TINYUTC_GET_DAYS_IN_NON_FEBRUARY(month))
-
-#define _TINYUTC_GET_DAYS_IN_MONTH_NON_LEAP_YEAR(month) \
-    (_TINYUTC_IS_FEBRUARY(month) ? _TINYUTC_DAYS_IN_FEBRUARY_NON_LEAP : _TINYUTC_GET_DAYS_IN_NON_FEBRUARY(month))
+#define _TINYUTC_GET_DAYS_IN_FEBRUARY(year) \
+    (_TINYUTC_IS_LEAP_YEAR(year) ? _TINYUTC_DAYS_IN_FEBRUARY_LEAP : _TINYUTC_DAYS_IN_FEBRUARY_NON_LEAP)
 
 #define _TINYUTC_GET_DAYS_IN_MONTH(month, year) \
-    ((IS_LEAP_YEAR(year)) ? _TINYUTC_GET_DAYS_IN_MONTH_LEAP_YEAR(month) : _TINYUTC_GET_DAYS_IN_MONTH_NON_LEAP_YEAR(month))
+    ((_TINYUTC_IS_FEBRUARY(month)) ? _TINYUTC_GET_DAYS_IN_FEBRUARY(year) : _TINYUTC_GET_DAYS_IN_NON_FEBRUARY(month))
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-    // Dead-simple structure to hold UTC time
+    //
+
+    /**
+     * @struct TinyUTCTime
+     * @brief  Dead-simple structure to hold UTC time.
+     *
+     * The microseconds field is used to store the microseconds of a second,
+     * which is not used in this library, except for the conversion from
+     * Iso8601 to TinyUTCTime.
+     */
     struct TinyUTCTime
     {
-        uint8_t second;
-        uint8_t minute;
-        uint8_t hour;
-        uint8_t day;
-        uint8_t month;
         uint16_t year;
+        uint8_t month;
+        uint8_t day;
+        uint8_t hour;
+        uint8_t minute;
+        uint8_t second;
+        uint32_t microseconds;
     };
 
     /**
@@ -108,7 +118,7 @@ extern "C"
      *         Typically, 0 indicates success, while non-zero values indicate
      *         an error.
      */
-    static inline uint8_t tinyutc_unix_to_utc(tinyutc_time_t unix_ts, struct TinyUTCTime *utc_tm)
+    static inline err_t tinyutc_unix_to_utc(struct TinyUTCTime *utc_tm, tinyutc_time_t unix_ts)
     {
         uint16_t year;
         uint8_t month, days_in_month;
@@ -139,12 +149,12 @@ extern "C"
         year = _TINYUTC_UNIX_EPOCH_YEAR;
         days = 0;
 
-        while ((days += (IS_LEAP_YEAR(year) ? _TINYUTC_DAYS_PER_LEAP_YEAR : _TINYUTC_DAYS_PER_YEAR)) <= unix_ts)
+        while ((days += (_TINYUTC_IS_LEAP_YEAR(year) ? _TINYUTC_DAYS_PER_LEAP_YEAR : _TINYUTC_DAYS_PER_YEAR)) <= unix_ts)
         {
             year++;
         }
         // Remove the days of the current year, that should not be counted
-        days -= IS_LEAP_YEAR(year) ? _TINYUTC_DAYS_PER_LEAP_YEAR : _TINYUTC_DAYS_PER_YEAR;
+        days -= _TINYUTC_IS_LEAP_YEAR(year) ? _TINYUTC_DAYS_PER_LEAP_YEAR : _TINYUTC_DAYS_PER_YEAR;
 
         // Remove the days of all past years, leaving us with only the day of the current year
         unix_ts -= days;
@@ -180,11 +190,12 @@ extern "C"
      * a date and time in UTC and converts it to the corresponding Unix timestamp.
      *
      * @param utc_tm Pointer to a TinyUTCTime structure containing the UTC time.
-     * @return The Unix timestamp corresponding to the given UTC time, or -1 if the year is before 1970.
+     * @return A uint8_t value indicating success or failure of the conversion.
+     *         Typically, 0 indicates success, while non-zero values indicate
+     *         an error.
      */
-    static inline tinyutc_time_t tinyutc_utc_to_unix(struct TinyUTCTime *utc_tm)
+    static inline err_t tinyutc_utc_to_unix(const struct TinyUTCTime *utc_tm, tinyutc_time_t *unix_ts)
     {
-        tinyutc_time_t unix_ts;
         uint8_t days_in_month;
         int i;
 
@@ -197,14 +208,14 @@ extern "C"
 
         // Start by couting the number of seconds in the year,
         // assuming non-leap year (365 days).
-        unix_ts = (utc_tm->year - _TINYUTC_UNIX_EPOCH_YEAR) * (_TINYUTC_SECS_PER_DAY * _TINYUTC_DAYS_PER_YEAR);
+        *unix_ts = (utc_tm->year - _TINYUTC_UNIX_EPOCH_YEAR) * (_TINYUTC_SECS_PER_DAY * _TINYUTC_DAYS_PER_YEAR);
 
         // For each leap year, add an extra day (86400 seconds).
         for (i = _TINYUTC_UNIX_EPOCH_YEAR; i < utc_tm->year; i++)
         {
-            if (IS_LEAP_YEAR(i))
+            if (_TINYUTC_IS_LEAP_YEAR(i))
             {
-                unix_ts += _TINYUTC_SECS_PER_DAY;
+                *unix_ts += _TINYUTC_SECS_PER_DAY;
             }
         }
 
@@ -212,17 +223,17 @@ extern "C"
         for (i = 1; i < utc_tm->month; i++)
         {
             days_in_month = _TINYUTC_GET_DAYS_IN_MONTH(i - 1, utc_tm->year);
-            unix_ts += _TINYUTC_SECS_PER_DAY * days_in_month;
+            *unix_ts += _TINYUTC_SECS_PER_DAY * days_in_month;
         }
 
         // The remaining is trivial:
         // days, hours, minutes and seconds.
-        unix_ts += (utc_tm->day - 1) * _TINYUTC_SECS_PER_DAY;
-        unix_ts += utc_tm->hour * _TINYUTC_SECS_PER_HOUR;
-        unix_ts += utc_tm->minute * _TINYUTC_SECS_PER_MIN;
-        unix_ts += utc_tm->second;
+        *unix_ts += (utc_tm->day - 1) * _TINYUTC_SECS_PER_DAY;
+        *unix_ts += utc_tm->hour * _TINYUTC_SECS_PER_HOUR;
+        *unix_ts += utc_tm->minute * _TINYUTC_SECS_PER_MIN;
+        *unix_ts += utc_tm->second;
 
-        return unix_ts;
+        return 0;
     }
 
     /**
@@ -234,22 +245,25 @@ extern "C"
      *
      * @param utc_tm Pointer to a `TinyUTCTime` structure containing the date
      *               for which the day of the week is to be calculated.
-     * 
+     *
      * @return The day of the week as an integer (0-6):
-     *         - 0: Sunday
-     *         - 1: Monday
-     *         - 2: Tuesday
-     *         - 3: Wednesday
-     *         - 4: Thursday
-     *         - 5: Friday
-     *         - 6: Saturday
+     *         - 0: Monday
+     *         - 1: Tuesday
+     *         - 2: Wednesday
+     *         - 3: Thursday
+     *         - 4: Friday
+     *         - 5: Saturday
+     *         - 6: Sunday
+     *
      *         If the year is before the Unix epoch year (_TINYUTC_UNIX_EPOCH_YEAR),
      *         the function returns -1.
      *
      * @see https://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week#Methods_in_computer_code
      */
-    static inline uint8_t tinyutc_get_week_day(struct TinyUTCTime *utc_tm)
+    static inline err_t tinyutc_get_week_day(const struct TinyUTCTime *utc_tm, bool monday_first)
     {
+
+        uint8_t w_day;
 
         uint8_t d = utc_tm->day;
         uint8_t m = utc_tm->month;
@@ -259,10 +273,27 @@ extern "C"
         {
             return -1;
         }
-
         // https://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week#Methods_in_computer_code
-        // Implementation of Keith method
-        return (d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) % 7;
+
+#ifdef TINYUTC_USE_KEITH_METHOD
+        // Implementation of Keith method, verbatim from wikipedia
+        w_day = (d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) % 7;
+
+#else
+    // Implementation of Sakamoto's method, verbatim from wikipedia
+    static uint8_t t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+    if (m < 3)
+    {
+        y -= 1;
+    }
+    w_day = (y + y / 4 - y / 100 + y / 400 + t[m - 1] + d) % 7;
+
+#endif
+        if (!monday_first)
+        {
+            w_day = (w_day - 1) % 7;
+        }
+        return w_day;
     }
 
 #ifdef __cplusplus
