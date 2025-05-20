@@ -1,5 +1,11 @@
 # CHANGELOG.md
 
+## 2.0
+
+Changes:
+- Add iso8601 parsing function
+- Change functions signature
+
 ## 1.1
 
 Fixes:
